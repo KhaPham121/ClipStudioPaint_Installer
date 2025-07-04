@@ -38,7 +38,7 @@ Công cụ đơn giản giúp bạn **sao lưu** và **khôi phục** dữ liệ
 
 ✅ **Chức năng:**
 - Tự động tạo shortcut `CSPData_Helper.lnk` để bạn dễ dàng chạy
-- Đảm bảo script hoạt động trong đúng thư mục để các đường dẫn tương đối (`BackupData`) luôn chính xác
+- Đảm bảo script hoạt động trong đúng thư mục để các đường dẫn tương đối (`Backup`) luôn chính xác
 
 ---
 
@@ -122,7 +122,7 @@ This helper tool is designed to **back up** and **restore** user data from **Cli
 
 ✅ **Functionality:**
 - Automatically creates a shortcut to `CSPData_Helper.bat`
-- Ensures correct working directory so relative paths (like `BackupData`) are valid
+- Ensures correct working directory so relative paths (like `Backup`) are valid
 
 ---
 
