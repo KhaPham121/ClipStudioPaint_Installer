@@ -23,7 +23,7 @@ Công cụ đơn giản giúp bạn **sao lưu** và **khôi phục** dữ liệ
 - **Khôi phục:** Ghi đè dữ liệu người dùng hiện tại từ bản sao lưu trước đó
 
 📍 **Vị trí sao lưu:**
-- Thư mục `BackupData` nằm **trong cùng thư mục** chứa script
+- Thư mục `Backup` nằm **trong cùng thư mục** chứa script
 
 📂 **Dữ liệu bao gồm:**
 - Brush tùy chỉnh, layout, màu sắc, shortcut key, cài đặt công cụ cá nhân
