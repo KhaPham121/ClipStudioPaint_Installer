@@ -2,14 +2,14 @@
 
 Script hỗ trợ **sao lưu** và **khôi phục** dữ liệu người dùng của **Clip Studio Paint (CSP)** một cách nhanh chóng và đơn giản.
 
-## 🛠️ Chức năng
+## Chức năng
 
 - Tự động xác định thư mục dữ liệu người dùng của CSP.
 - **Sao lưu** toàn bộ dữ liệu vào thư mục `backup` (nằm cùng vị trí với script).
 - **Khôi phục** dữ liệu từ thư mục `backup` về lại vị trí gốc.
 - Hiển thị thông báo rõ ràng trong quá trình thực thi.
 
-## ▶️ Cách sử dụng
+## Cách sử dụng
 
 1. Tải file `CSPData_Helper.bat` về máy.
 2. Đặt script ở nơi bạn muốn lưu bản sao lưu.
@@ -20,7 +20,7 @@ Script hỗ trợ **sao lưu** và **khôi phục** dữ liệu người dùng c
 
 > ⚠️ Lưu ý: Thư mục `backup` sẽ được tạo tự động nếu chưa tồn tại.
 
-## ❗ Xử lý lỗi
+## Xử lý lỗi
 
 - **Không tìm thấy thư mục dữ liệu CSP**:
   - Đảm bảo bạn đã từng mở Clip Studio Paint ít nhất một lần.
@@ -45,7 +45,7 @@ A simple batch script to **back up** and **restore** user data from **Clip Studi
 - **Restores** data from the `backup` folder back to the original location.
 - Provides clear prompts during execution.
 
-## ▶️ How to Use
+## How to Use
 
 1. Download the `CSPData_Helper.bat` file.
 2. Place it wherever you want the backup to be stored.
@@ -56,7 +56,7 @@ A simple batch script to **back up** and **restore** user data from **Clip Studi
 
 > ⚠️ Note: The `backup` folder will be created automatically if it doesn’t exist.
 
-## ❗ Troubleshooting
+## Troubleshooting
 
 - **CSP data folder not found**:
   - Make sure you have opened Clip Studio Paint at least once before running the script.
