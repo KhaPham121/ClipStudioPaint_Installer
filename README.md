@@ -38,7 +38,7 @@ Script hỗ trợ **sao lưu** và **khôi phục** dữ liệu người dùng c
 
 A simple batch script to **back up** and **restore** user data from **Clip Studio Paint (CSP)**.
 
-## 🛠️ Features
+## Features
 
 - Automatically detects the CSP user data directory.
 - **Backs up** all data to a `backup` folder (located in the same directory as the script).
