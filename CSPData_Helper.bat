@@ -11,8 +11,8 @@ if %errorlevel% neq 0 (
     echo Administrator privileges required...
     echo [ERROR] Administrator privileges required... >> "%logfile%"
     timeout /t 2 /nobreak >nul
-    echo Setup will automatically close and auto-rerun with Administrator privileges...
-    echo [INFO] Setup will auto-rerun as Administrator... >> "%logfile%"
+    echo Script will automatically close and auto-rerun with Administrator privileges...
+    echo [INFO] Script will auto-rerun as Administrator... >> "%logfile%"
     timeout /t 3 /nobreak >nul
     powershell -Command "Start-Process '%~f0' -Verb RunAs"
     exit /b
