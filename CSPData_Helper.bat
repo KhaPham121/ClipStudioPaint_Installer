@@ -9,7 +9,6 @@ set "DestinationBackup=%source%\Backup"
 set "target1=%appdata%\CELSYSUserData"
 set "target2=%appdata%\CELSYS"
 set "restore_status=OK"
-call :check_registry_key_exist
 echo [START] %date% %time% >> "%logfile%"
 cls
 title ClipStudio Paint Data Helper by KhaPham.K398
@@ -286,25 +285,4 @@ echo.
 echo Press any key to return.
 pause >nul
 goto manage_userdata
-goto :eof
-
-
-
-:check_registry_key_exist
-REG QUERY "%RegKey%" >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-for /F "tokens=2*" %%A in ('REG QUERY "%RegKey%" /v %RegValue% 2^>nul') do (
-for /F "delims=," %%i in ("%%B") do (
-set "destination=%%i"
-echo Registry key found. Setting destination from registry key...
-echo [INFO] Registry key found. Set destination from registry key. >> "%logfile%"
-echo [INFO] Destination is !destination! >> "%logfile%"
-)
-)
-) else (
-set "destination=%ProgramFiles%\CELSYS\CLIP STUDIO 1.5\CLIP STUDIO PAINT\CLIPStudioPaint.exe"
-echo Registry key not found. Setting destination default...
-echo [INFO] Registry key not found. Set destination default. >> "%logfile%"
-echo [INFO] Destination is !destination! >> "%logfile%"
-)
 goto :eof
