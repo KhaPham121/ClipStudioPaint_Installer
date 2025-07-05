@@ -16,20 +16,20 @@ net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo Administrator privileges required...
     echo [ERROR] Administrator privileges required... >> "%logfile%"
-    timeout /t 2 /nobreak >nul
+    timeout /t 1 /nobreak >nul
     echo Script will automatically close and auto-rerun with Administrator privileges...
     echo [INFO] Script will auto-rerun as Administrator... >> "%logfile%"
-    timeout /t 3 /nobreak >nul
+    timeout /t 1 /nobreak >nul
     powershell -Command "Start-Process '%~f0' -Verb RunAs"
     exit /b
 )
-mode con: cols=75 lines=20
+mode con: cols=75 lines=25
 title ClipStudio Paint Data Helper by KhaPham.K398
 goto manage_userdata
 
 :gethelp
 cls
-timeout /t 2 /nobreak >nul
+timeout /t 1 /nobreak >nul
 echo 1. Your data back up at %~dp0%Backup.
 echo 2. Put folder with format Backup_{yyyy-MM-dd_HH-mm-ss} you backed up before into %~dp0%Backup and use this batch to restore your appdata.
 echo 3. If you get any trouble, contact technican and send them log.txt file to get assistance.
@@ -46,9 +46,8 @@ timeout /t 1 /nobreak >nul
 echo [WARNING] This action CANNOT BE UNDONE. Deleted data CANNOT be recovered.
 echo Make sure you have backed up your data before.
 echo Do you want to delete?
-echo 1. Yes
-echo 2. No
-choice /c 12 /n
+echo [Y] YES			[N] No
+choice /c YN /n
 if errorlevel 2 goto manage_userdata
 if errorlevel 1 goto delete_data
 ) else (
@@ -89,12 +88,12 @@ echo ======================================================================
 echo     	  ClipStudio Paint Data Helper by KhaPham.K398
 echo ======================================================================
 echo.
-echo		1. Backup my CLIPStudioPaint UserData
-echo		2. Restore my CLIPStudioPaint UserData
-echo		3. Delete my CLIPStudioPaint UserData
-echo		4. Get help
+echo		[1]. Backup my CLIPStudioPaint UserData
+echo		[2]. Restore my CLIPStudioPaint UserData
+echo		[3]. Wipe my current CLIPStudioPaint UserData
+echo		[4]. Get help
 echo.
-echo		X. Exit
+echo		[X]. Exit
 echo.
 echo ======================================================================
 choice /c 1234X /n
@@ -102,11 +101,27 @@ if errorlevel 5 exit
 if errorlevel 4 goto gethelp
 if errorlevel 3 goto check_delete
 if errorlevel 2 goto restore_data
-if errorlevel 1 goto backup_data
+if errorlevel 1 goto check_backup
+
+:check_backup
+cls
+timeout /t 1 /nobreak >nul
+if exist "!CSPUserData1!\" (
+    echo CELSYSUserData exists. Proceeding...
+    goto backup_data
+) else (
+    echo CELSYSUserData not found. Nothing to Backup
+    echo [ERROR] Folder !CSPUserData1! not found >> "%logfile%"
+	echo Press any key to return
+    pause >nul
+    goto manage_userdata
+)
 
 :backup_data
 cls
 timeout /t 1 /nobreak >nul
+echo Found CELSYSUserData
+echo [INFO] Found CELSYSUserData >> "%logfile%"
 echo Backing up your CLIPStudioPaint UserData...
 echo [INFO] Backing up your CLIPStudioPaint UserData... >> "%logfile%"
 
@@ -147,9 +162,16 @@ if "%status%"=="OK" (
     echo Backup completed successfully at: %backupfolder%
     echo [INFO] Backup completed successfully at: %backupfolder% >> "%logfile%"
 ) else (
-    rd /s /q "%temp_folder%"
-    echo Backup failed. No backup folder was created.
-    echo [ERROR] Backup failed. No backup folder was created. >> "%logfile%"
+ren "%temp_folder%" "Backup_%timestamp%"
+    echo [ACTION] Renamed temp folder to Backup_%timestamp%. >> "%logfile%"
+    set "backupfolder=%DestinationBackup%\Backup_%timestamp%"
+    (
+        echo backup_time=%timestamp%
+        echo folder_list=%CSPUserData1%;%CSPUserData2%;%CSPUserData3%
+        echo status=ERROR
+    ) > "%backupfolder%\backup.point"
+    echo Backup completed but encounter ERROR at: %backupfolder%
+    echo [INFO] Backup completed but encounter ERROR at: %backupfolder% >> "%logfile%"
 )
 
 echo Press any key to go back.
@@ -164,8 +186,8 @@ timeout /t 1 /nobreak >nul
 echo ======================================================================
 echo                      List backups available:
 echo ======================================================================
+echo No.		Time				Status
 echo.
-
 set "backup_root=%source%\Backup"
 setlocal enabledelayedexpansion
 set /a count=0
@@ -189,7 +211,7 @@ for /d %%B in ("%backup_root%\Backup_*") do (
         )
         if "!status!"=="ERROR" (
             set "datetime=!bt!"
-            echo !count!. Backup_[!datetime!]
+            echo !count!. Backup_[!datetime!]			[ ^^! ] 
             echo [ERROR] Found backup with error status: Backup_[!datetime!] >> "%logfile%"
             set "folder!count!=%%B"
         )
@@ -230,10 +252,21 @@ for /f "usebackq tokens=1,* delims==" %%a in ("!restore_folder!\backup.point") d
 if /i not "!valid_status!"=="OK" (
     echo Selected backup is not valid for restore.
     echo [ERROR] Selected backup is not valid for restore. >> "%logfile%"
-    echo Press any key to return.
-    pause >nul
-    goto restore_data
+echo [1] Restore			[2] Delete			[0] Back
+choice /c 120 /n
+if errorlevel 3 goto restore_data
+if errorlevel 2 goto check_delete_backup
+if errorlevel 1 goto check_overwrite
 ) else (
+echo [1] Restore			[2] Delete			[0] Back
+choice /c 120 /n
+if errorlevel 3 goto restore_data
+if errorlevel 2 goto check_delete_backup
+if errorlevel 1 goto check_overwrite
+)
+
+
+:check_overwrite
 if exist "!CSPUserData1!" (
 echo Detected old appdata >> "%logfile%"
 echo This action will overwrite your current app data
@@ -241,11 +274,24 @@ echo Do you want to continue?
 echo [Y]= YES				[N]= NO
 choice /c YN /n
 if errorlevel 2 goto restore_data
-if errorlevel 1 goto restore
-) else goto restore
+if errorlevel 1 goto check_restore
+) else (
+goto check_restore
 )
 
-:restore
+:check_restore
+cls
+if /i not "!valid_status!"=="OK" (
+    echo If you continue to restore, your application may not function properly.
+	echo Do you want to continue?
+	echo [Y] YES			[N] No
+	choice /c YN /n
+if errorlevel 2 goto restore_data
+if errorlevel 1 goto start_restore
+)
+
+
+:start_restore
 echo Restoring...
 echo [ACTION] Starting restore process for !foldername! >> "%logfile%"
 timeout /t 1 >nul
@@ -280,9 +326,26 @@ if "!restore_status!"=="OK" (
     echo Restore encountered errors. Please verify files manually.
     echo [ERROR] Restore encountered errors. >> "%logfile%"
 )
-
-echo.
 echo Press any key to return.
 pause >nul
 goto manage_userdata
 goto :eof
+
+
+:check_delete_backup
+echo Selected: [!foldername!]
+echo [INFO] Selected to delete: [!foldername!] >> "%logfile%"
+echo Do you want to delete this backup?
+echo [Y] YES		[N] NO
+choice /c YN /n
+if errorlevel 2 goto restore_data
+if errorlevel 1 goto delete_backup
+
+:delete_backup
+echo Deleting... [!foldername!]
+echo Delete !foldername!  >> "%logfile%"
+rmdir /S /Q "!folder%choice%!"  >> "%logfile%"
+echo Deleted.
+echo Press any key to return.
+pause >nul
+goto restore_data
