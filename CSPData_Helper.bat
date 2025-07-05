@@ -182,13 +182,13 @@ for /d %%B in ("%backup_root%\Backup_*") do (
             if "%%a"=="status" set "status=%%b"
         )
         if "!status!"=="OK" (
-            set "datetime=!bt:~0,16!"
+            set "datetime=!bt!"
             echo !count!. Backup_[!datetime!]
             echo [INFO] Found valid backup: Backup_[!datetime!] >> "%logfile%"
             set "folder!count!=%%B"
         )
         if "!status!"=="ERROR" (
-            set "datetime=!bt:~0,16!"
+            set "datetime=!bt!"
             echo !count!. Backup_[!datetime!]
             echo [ERROR] Found backup with error status: Backup_[!datetime!] >> "%logfile%"
             set "folder!count!=%%B"
