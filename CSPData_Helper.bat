@@ -2,7 +2,16 @@
 setlocal enabledelayedexpansion
 set "ScriptVersion=1.0.0"
 set "source=%~dp0"
-set "logfile=%source%\log.txt")
+set "RegKey=HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{1E4572D2-28BC-4BC9-B743-13DC6CFD71DB}"
+set "RegValue=DisplayIcon"
+set "logfile=%source%\log.txt"
+set "CSPUserData1=%appdata%\CELSYSUserData"
+set "CSPUserData2=%appdata%\CELSYS"
+set "DestinationBackup=%source%\Backup"
+set "target1=%appdata%\CELSYSUserData"
+set "target2=%appdata%\CELSYS"
+set "restore_status=OK"
+call :check_registry_key_exist
 echo [START] %date% %time% >> "%logfile%"
 cls
 title ClipStudio Paint Data Helper by KhaPham.K398
@@ -59,9 +68,15 @@ cls
 timeout /t 1 /nobreak >nul
 echo [INFO] Deleting CELSYSUserData... >> "%logfile%"
 echo Deleteing...
-rmdir /S /Q "%appdata%\CELSYSUserData" >> "%logfile%"
-rmdir /S /Q "%appdata%\CELSYS" >> "%logfile%"
-rmdir /S /Q "%appdata%\CELSYS_EN" >> "%logfile%"
+rmdir /S /Q "!CSPUserData1!" >> "%logfile%"
+rmdir /S /Q "!CSPUserData2!" >> "%logfile%"
+set "CSPUserData3="
+for /d %%G in ("%appdata%\CELSYS_*") do (
+    if /I not "%%~nxG"=="CELSYS" (
+        set "CSPUserData3=%%G"
+        call rmdir /S /Q "%%G" >> "%logfile%"
+    )
+)
 echo [INFO] Deleted CELSYSUserData. >> "%logfile%"
 echo Deleted CELSYSUserData.
 timeout /t 1 /nobreak >nul
@@ -97,9 +112,6 @@ cls
 timeout /t 1 /nobreak >nul
 echo Backing up your CLIPStudioPaint UserData...
 echo [INFO] Backing up your CLIPStudioPaint UserData... >> "%logfile%"
-set "CSPUserData1=%appdata%\CELSYSUserData"
-set "CSPUserData2=%appdata%\CELSYS"
-set "DestinationBackup=%source%\Backup"
 
 for /f %%i in ('powershell -NoProfile -Command "Get-Date -Format \"yyyy-MM-dd_HH-mm-ss\""') do set "timestamp=%%i"
 set "backupfolder=%DestinationBackup%\Backup_%timestamp%"
@@ -214,7 +226,6 @@ for %%n in ("!restore_folder!") do set "foldername=%%~nxn"
 echo Selected: [!foldername!]
 echo [INFO] Selected: [!foldername!] >> "%logfile%"
 echo.
-
 set "valid_status="
 for /f "usebackq tokens=1,* delims==" %%a in ("!restore_folder!\backup.point") do (
     if "%%a"=="status" set "valid_status=%%b"
@@ -225,16 +236,22 @@ if /i not "!valid_status!"=="OK" (
     echo Press any key to return.
     pause >nul
     goto restore_data
+) else (
+if exist "!CSPUserData1!" (
+echo Detected old appdata >> "%logfile%"
+echo This action will overwrite your current app data
+echo Do you want to continue?
+echo [Y]= YES				[N]= NO
+choice /c YN /n
+if errorlevel 2 goto restore_data
+if errorlevel 1 goto restore
+) else goto restore
 )
 
+:restore
 echo Restoring...
 echo [ACTION] Starting restore process for !foldername! >> "%logfile%"
 timeout /t 1 >nul
-
-set "target1=%appdata%\CELSYSUserData"
-set "target2=%appdata%\CELSYS"
-set "restore_status=OK"
-
 if exist "!restore_folder!\CELSYSUserData" (
     xcopy "!restore_folder!\CELSYSUserData" "%target1%\" /E /H /C /I /Y >> "%logfile%"
     echo [ACTION] Restored CELSYSUserData to user folder. >> "%logfile%"
@@ -271,6 +288,7 @@ echo.
 echo Press any key to return.
 pause >nul
 goto manage_userdata
+goto :eof
 
 
 
