@@ -23,7 +23,7 @@ if %errorlevel% neq 0 (
     powershell -Command "Start-Process '%~f0' -Verb RunAs"
     exit /b
 )
-mode con: cols=75 lines=15
+mode con: cols=75 lines=20
 title ClipStudio Paint Data Helper by KhaPham.K398
 goto manage_userdata
 
