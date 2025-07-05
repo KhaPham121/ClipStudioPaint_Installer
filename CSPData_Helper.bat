@@ -292,31 +292,48 @@ if errorlevel 1 goto start_restore
 
 
 :start_restore
+set "restore_status1=OK"
+set "restore_status2=OK"
+set "restore_status3=OK"
 echo Restoring...
 echo [ACTION] Starting restore process for !foldername! >> "%logfile%"
 timeout /t 1 >nul
-if exist "!restore_folder!\CELSYSUserData" (
-    xcopy "!restore_folder!\CELSYSUserData" "%target1%\" /E /H /C /I /Y >> "%logfile%"
-    echo [ACTION] Restored CELSYSUserData to user folder. >> "%logfile%"
-    if errorlevel 1 set "restore_status=ERROR"
-) else (
-    echo [WARNING] CELSYSUserData not found in backup. Skipping. >> "%logfile%"
-)
-
 if exist "!restore_folder!\CELSYS" (
     xcopy "!restore_folder!\CELSYS" "%target2%\" /E /H /C /I /Y >> "%logfile%"
     echo [ACTION] Restored CELSYS to user folder. >> "%logfile%"
-    if errorlevel 1 set "restore_status=ERROR"
+    if !errorlevel! GEQ 1 set "restore_status1=ERROR"
 ) else (
     echo [WARNING] CELSYS not found in backup. Skipping. >> "%logfile%"
+	set "restore_status1=ERROR"
 )
 
+set "has_subfolder=false"
 for /d %%G in ("!restore_folder!\CELSYS_*") do (
+    set "has_subfolder=true"
     set "restore_subfolder=%%~nxG"
     set "target_folder=%appdata%\%%~nxG"
     call xcopy "%%G" "!target_folder!\" /E /H /C /I /Y >> "%logfile%"
     call echo [ACTION] Restored %%~nxG to !target_folder! >> "%logfile%"
-    if errorlevel 1 set "restore_status=ERROR"
+    if !errorlevel! GEQ 1 set "restore_status2=ERROR"
+)
+if "!has_subfolder!"=="false" (
+    echo [WARNING] CELSYS_* not found in backup. Skipping. >> "%logfile%"
+	set "restore_status2=ERROR"
+)
+
+if exist "!restore_folder!\CELSYSUserData" (
+    xcopy "!restore_folder!\CELSYSUserData" "%target1%\" /E /H /C /I /Y >> "%logfile%"
+    echo [ACTION] Restored CELSYSUserData to user folder. >> "%logfile%"
+    if !errorlevel! GEQ 1 set "restore_status3=ERROR"
+) else (
+    echo [WARNING] CELSYSUserData not found in backup. Skipping. >> "%logfile%"
+    set "restore_status3=ERROR"
+)
+
+if "!restore_status1!!restore_status2!!restore_status3!"=="OKOKOK" (
+    set "restore_status=OK"
+) else (
+    set "restore_status=ERROR"
 )
 
 if "!restore_status!"=="OK" (
