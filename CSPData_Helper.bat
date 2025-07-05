@@ -1,15 +1,47 @@
 @echo off
+cls
 setlocal enabledelayedexpansion
 set "ScriptVersion=1.0.0"
-set "source=%~dp0"
-set "logfile=%source%\log.txt"
-set "CSPUserData1=%appdata%\CELSYSUserData"
-set "CSPUserData2=%appdata%\CELSYS"
-set "DestinationBackup=%source%\Backup"
-set "target1=%appdata%\CELSYSUserData"
-set "target2=%appdata%\CELSYS"
-set "restore_status=OK"
-echo [START] %date% %time% >> "%logfile%"
+goto :check_administrator_privillage
+title ClipStudio Paint Data Helper by KhaPham.K398
+:check_administrator_privillage
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Administrator privileges required...
+    timeout /t 2 /nobreak >nul
+    echo Please try run program with Administrator.
+    timeout /t 3 /nobreak >nul
+    exit
+)
+mode con: cols=75 lines=25
+title ClipStudio Paint Data Helper by KhaPham.K398
+
+
+:folder_picker
+echo Select your backup location:
+set "vbs=%temp%\pickfolder.vbs"
+> "%vbs%" echo Set shell = CreateObject("Shell.Application")
+>>"%vbs%" echo Set folder = shell.BrowseForFolder(0, "Select your backup location:", 0, 0)
+>>"%vbs%" echo If Not folder Is Nothing Then WScript.Echo folder.Self.Path
+for /f "delims=" %%i in ('cscript //nologo "%vbs%"') do set "source=%%i"
+del "%vbs%"
+if defined source (
+    echo [OK] Selected: "%source%"
+	set "logfile=%source%\log.txt"
+	set "CSPUserData1=%appdata%\CELSYSUserData"
+	set "CSPUserData2=%appdata%\CELSYS"
+	set "DestinationBackup=%source%\Backup"
+	set "target1=%appdata%\CELSYSUserData"
+	set "target2=%appdata%\CELSYS"
+	set "restore_status=OK"
+	timeout /t 1 /nobreak >nul
+) else (
+    echo Destination folder not selected.
+	goto folder_picker
+)
+goto manage_userdata
+
+
 cls
 title ClipStudio Paint Data Helper by KhaPham.K398
 net session >nul 2>&1
@@ -30,8 +62,8 @@ goto manage_userdata
 :gethelp
 cls
 timeout /t 1 /nobreak >nul
-echo 1. Your data back up at %~dp0%Backup.
-echo 2. Put folder with format Backup_{yyyy-MM-dd_HH-mm-ss} you backed up before into %~dp0%Backup and use this batch to restore your appdata.
+echo 1. Your data back up at "%source%\Backup".
+echo 2. Put folder with format Backup_{yyyy-MM-dd_HH-mm-ss} you backed up before into "%source%\Backup" and use this program to restore your appdata.
 echo 3. If you get any trouble, contact technican and send them log.txt file to get assistance.
 echo.
 echo Press any key to go back Menu
@@ -93,10 +125,13 @@ echo		[2]. Restore my CLIPStudioPaint UserData
 echo		[3]. Wipe my current CLIPStudioPaint UserData
 echo		[4]. Get help
 echo.
+echo		[C]. Change location
 echo		[X]. Exit
 echo.
 echo ======================================================================
-choice /c 1234X /n
+echo Current location: "%source%"
+choice /c 1234XC /n
+if errorlevel 6 goto folder_picker
 if errorlevel 5 exit
 if errorlevel 4 goto gethelp
 if errorlevel 3 goto check_delete
