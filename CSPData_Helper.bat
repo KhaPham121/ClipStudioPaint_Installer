@@ -2,8 +2,6 @@
 setlocal enabledelayedexpansion
 set "ScriptVersion=1.0.0"
 set "source=%~dp0"
-set "RegKey=HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{1E4572D2-28BC-4BC9-B743-13DC6CFD71DB}"
-set "RegValue=DisplayIcon"
 set "logfile=%source%\log.txt"
 set "CSPUserData1=%appdata%\CELSYSUserData"
 set "CSPUserData2=%appdata%\CELSYS"
