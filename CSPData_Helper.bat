@@ -23,48 +23,56 @@ set "vbs=%temp%\pickfolder.vbs"
 > "%vbs%" echo Set shell = CreateObject("Shell.Application")
 >>"%vbs%" echo Set folder = shell.BrowseForFolder(0, "Select your backup location:", 0, 0)
 >>"%vbs%" echo If Not folder Is Nothing Then WScript.Echo folder.Self.Path
-for /f "delims=" %%i in ('cscript //nologo "%vbs%"') do set "source=%%i"
+for /f "delims=" %%i in ('cscript //nologo "%vbs%"') do (
+	set "source=%%i"
+    echo [OK] Selected: "%%i"
+	set "logfile=%%i\log.txt"
+	echo [INFO] Location logfile: "!logfile!" >> "!logfile!"
+	timeout /t 1 >nobreak >nul
+	)
 del "%vbs%"
 if defined source (
-    echo [OK] Selected: "%source%"
-	set "logfile=%source%\log.txt"
+	echo [INFO] Backup source select: "%source%" >> "%logfile%"
 	set "CSPUserData1=%appdata%\CELSYSUserData"
+	echo [ACTION] Set CELSYSUserData location: "!CSPUserData1!" >> "%logfile%"
 	set "CSPUserData2=%appdata%\CELSYS"
+	echo [ACTION] Set CELSYS location: "!CSPUserData2!" >> "%logfile%"
 	set "DestinationBackup=%source%\Backup"
+	echo [ACTION] Set Destination backup location: "!DestinationBackup!" >> "%logfile%"
 	set "target1=%appdata%\CELSYSUserData"
 	set "target2=%appdata%\CELSYS"
 	set "restore_status=OK"
+	if not exist "%source%\Backup" (
+		echo Backup folder does not exist. Creating new...
+		mkdir "%source%\Backup" >> "%logfile%"
+		echo [ACTION] Backup folder does not exist. Creating new... >> "%logfile%"
+		)
 	timeout /t 1 /nobreak >nul
 ) else (
     echo Destination folder not selected.
+	echo [ERROR] Destination folder not selected  >> "%logfile%"
 	goto folder_picker
 )
-goto manage_userdata
-
 
 cls
 title ClipStudio Paint Data Helper by KhaPham.K398
-net session >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Administrator privileges required...
-    echo [ERROR] Administrator privileges required... >> "%logfile%"
-    timeout /t 1 /nobreak >nul
-    echo Script will automatically close and auto-rerun with Administrator privileges...
-    echo [INFO] Script will auto-rerun as Administrator... >> "%logfile%"
-    timeout /t 1 /nobreak >nul
-    powershell -Command "Start-Process '%~f0' -Verb RunAs"
-    exit /b
-)
 mode con: cols=75 lines=25
-title ClipStudio Paint Data Helper by KhaPham.K398
 goto manage_userdata
 
 :gethelp
 cls
 timeout /t 1 /nobreak >nul
-echo 1. Your data back up at "%source%\Backup".
-echo 2. Put folder with format Backup_{yyyy-MM-dd_HH-mm-ss} you backed up before into "%source%\Backup" and use this program to restore your appdata.
-echo 3. If you get any trouble, contact technican and send them log.txt file to get assistance.
+echo ======================================================================
+echo 				Help
+echo ======================================================================
+echo 1. Your data back up at current location of current backups.
+echo 2. To manage your backups, in the restore section, select the backup and choose your action.
+echo 3. Put folder with format "Backup_{yyyy-MM-dd_HH-mm-ss}" you backed up before into location of current backups and use this program to restore your appdata.
+echo 4. In the restore section, backups with empty status means OK, otherwise it means there is an error.
+echo 5. If you get any trouble, contact technican and send them log.txt file to get assistance.
+Echo.
+echo.
+echo Location of current backups: "!source!\backup\"
 echo.
 echo Press any key to go back Menu
 pause >nul
@@ -129,7 +137,7 @@ echo		[C]. Change location
 echo		[X]. Exit
 echo.
 echo ======================================================================
-echo Current location: "%source%"
+echo Backup current location: "%source%"
 choice /c 1234XC /n
 if errorlevel 6 goto folder_picker
 if errorlevel 5 exit
@@ -380,11 +388,11 @@ if "!restore_status!"=="OK" (
 )
 echo Press any key to return.
 pause >nul
-goto manage_userdata
-goto :eof
+goto restore_data
 
 
 :check_delete_backup
+cls
 echo Selected: [!foldername!]
 echo [INFO] Selected to delete: [!foldername!] >> "%logfile%"
 echo Do you want to delete this backup?
